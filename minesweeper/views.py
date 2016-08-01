@@ -1,16 +1,25 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-from .models import Game
-import random
-import math
 import json
-from .utils import isvalid, floodFill
-from .constants import dx, dy, MAX_ROW_SIZE_REACHED, GAME_WON, BOMB_STEPPED
+import math
+import random
+
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+
+from .constants import BOMB_STEPPED, GAME_WON, MAX_ROW_SIZE_REACHED, dx, dy
+from .models import Game
+from .utils import floodFill, isvalid
+
 
 def index(request):
+	'''
+		landing page - gets board configuration details.
+	'''
 	return render(request, "minesweeper/index.html", {})
 
 def createGame(request):
+	'''
+		prepars the board, places bombs and computs the surrounding number value for each cell
+	'''
 	row = int(request.POST["row"])
 	col = int(request.POST["col"])
 
@@ -50,22 +59,31 @@ def createGame(request):
 	game = Game.objects.create(row=row, col=col, state=json.dumps(state), numCount=numCount, viewedNumCount=0, clickCount=0)
 	return HttpResponseRedirect("/minesweeper/game/{0}".format(game.id))
 
+
 def game(request, gameId):
+	'''
+		Loads the game board for play depending on new game or 'ended' game
+	'''
 	game = get_object_or_404(Game, pk=gameId)
 	curState = json.loads(game.state)
 
-	if game.viewedNumCount == game.numCount:	#game over already, won
-		return render(request, "minesweeper/game.html", 
-				{'curState' : curState, 'gameId': gameId, 'resultText': GAME_WON, 'gameOver':"true"})
+	if game.viewedNumCount == game.numCount:	#game already ended, won
+		return render(request, "minesweeper/game.html",  {
+				'curState' : curState, 'gameId': gameId, 
+				'resultText': GAME_WON, 'gameOver':"true"})
 
-	if game.numCount == -1:		#game over, lost.
-		return render(request, "minesweeper/game.html", 
-				{'curState' : curState, 'gameId': gameId, 'resultText': BOMB_STEPPED, 'gameOver': "true"})
-
+	if game.numCount == -1:		#game already ended, lost.
+		return render(request, "minesweeper/game.html", {
+				'curState' : curState, 'gameId': gameId, 
+				'resultText': BOMB_STEPPED, 'gameOver': "true"})
 	
 	return render(request, "minesweeper/game.html", {'curState' : curState, 'gameId': gameId, 'gameOver': "false"})
 
 def gameAction(request, gameId, row, col):
+	'''
+		Handles user click action on cell.
+		openCell variable captures which cells needs to be opened along with its value.
+	'''
 	row = int(row)
 	col = int(col)
 

@@ -1,5 +1,7 @@
 import json
+
 from .constants import dx, dy
+
 
 def isvalid(x, y, row, col):
 	'''

@@ -1,0 +1,30 @@
+<form action={% url 'ms:createGame' %} method="POST">
+{% csrf_token %}
+<h1> <center> Minesweeper! </center></h1>
+<br />
+<style type="text/css">
+	table.center {
+    	margin-left:auto; 
+    	margin-right:auto;
+    }
+</style>
+<table class="center">
+	<tr> 
+		<td> Row </td>
+		<td> <input type="number" name="row" id="row" /> </td> 
+	</tr>
+
+	<tr>
+		<td> Col </td>
+		<td> <input type="number" name="col" id="col" /> </td>
+	</tr>
+</table>
+
+<br/>
+<center><input type="submit" value="submit" /></center>
+
+</form>
+
+{% if error %}
+	<strong> {{ error }}</strong>
+{% endif %}

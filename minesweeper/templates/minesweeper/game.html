@@ -1,0 +1,100 @@
+<script src="https://code.jquery.com/jquery-3.1.0.min.js">
+</script>
+
+{% if curState %}
+	
+	<style>
+	td {
+    	border: 1px solid black;
+    	width: 20px;
+    	height: 20px;
+	}
+	.visited {
+		background-color: green
+	}
+	.bomb {
+		background-color: red
+	}
+	
+	table.center {
+    	margin-left:auto; 
+    	margin-right:auto;
+    }
+
+    h3 {
+    	text-align: center;
+    }
+
+	</style>
+	<h3 > Game on! </h3>
+	<table id="mine" class="center" gameId={{ gameId }}>
+		{% for row in curState %}
+			<tr>
+			{% for ele in row %}
+				<td {% if ele.1 %} class="visited" {% endif %} >
+					{% if ele.1 %}
+						{{ ele.0 }}
+					{% endif %}
+				</td>
+			{% endfor %}
+			</tr>
+		{% endfor %}
+	</table>
+
+
+	<center>
+	<div>
+		<strong> <label id="result"> </label> </strong>
+	</div>
+	</center>
+
+	<a href='{% url "ms:index" %}'> New Game </a>
+
+{% endif %}
+	<script type="text/javascript">
+
+		$(document).ready(function() {
+			var gameId = $("#mine").attr("gameId");
+
+	        $("#mine td").click(function() {
+	            var col = parseInt($(this).index());
+	            var row = parseInt($(this).parent().index());
+
+	            var cell = $("#mine tr").eq(row).find("td").eq(col);
+
+	            if (cell.hasClass("visited")) {
+	            	return false;
+	            }
+
+	            action = "/minesweeper/game/"+gameId+"/"+row+"/"+col+"/";
+
+	            $.getJSON({
+	            	url: action,
+	            	async : false,
+	            	success : function (data, status, xhr) {
+
+	            		if (data.gameOver) {
+	            			$("#result").text(data.resultText);
+	            		}
+
+	            		viewCell = data.viewCell
+	            		for (i = 0 ; i < viewCell.length; i++)
+	            		{
+	            			row = viewCell[i][0];
+	            			col = viewCell[i][1];
+	            			val = viewCell[i][2];
+	            			
+	            			cell = $("#mine tr").eq(row).find("td").eq(col);
+
+	            			if (val == 'B')
+	            				cell.addClass("bomb");
+	            			else cell.addClass("visited");
+
+	            			cell.text(val);
+	            		}
+	            	}
+	            });
+	        });
+	    });
+
+	</script>

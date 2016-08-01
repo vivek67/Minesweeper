@@ -66,11 +66,12 @@ def game(request, gameId):
 	'''
 	game = get_object_or_404(Game, pk=gameId)
 	curState = json.loads(game.state)
+	game_won_text = GAME_WON + str(game.row*game.col - game.clickCount)
 
 	if game.viewedNumCount == game.numCount:	#game already ended, won
 		return render(request, "minesweeper/game.html",  {
 				'curState' : curState, 'gameId': gameId, 
-				'resultText': GAME_WON, 'gameOver':"true"})
+				'resultText': game_won_text, 'gameOver':"true"})
 
 	if game.numCount == -1:		#game already ended, lost.
 		return render(request, "minesweeper/game.html", {
@@ -122,13 +123,9 @@ def gameAction(request, gameId, row, col):
 
 	openCell, curState, viewedNumCount = floodFill(row, col, game)
 
-	game.state = json.dumps(curState)
-	game.viewedNumCount = viewedNumCount
-	game.clickCount += 1
-	game.save()
 
 	resultText = ""
-	if game.viewedNumCount == game.numCount:
+	if viewedNumCount == game.numCount:
 		gameOver = True
 		won = True
 		resultText = GAME_WON + str(game.row*game.col - game.clickCount)
@@ -137,10 +134,15 @@ def gameAction(request, gameId, row, col):
 		for row in xrange(game.row):
 			for col in xrange(game.col):
 				openCell.append([row, col, curState[row][col][0]])
-
+				curState[row][col][1] = True
 	else:
 		gameOver = False
 		won = False
+
+	game.state = json.dumps(curState)
+	game.viewedNumCount = viewedNumCount
+	game.clickCount += 1
+	game.save()
 
 	result = {
 		'gameOver' : gameOver,

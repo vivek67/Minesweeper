@@ -35,10 +35,16 @@
 		{% for row in curState %}
 			<tr>
 			{% for ele in row %}
-				<td {% if ele.1 %} class="visited" {% endif %} >
+				<td {% if ele.1 and ele.0 == 'B' %} 
+						class="bomb" 
+					{% elif ele.1 %}
+						class="visited" 
+					{% endif %}>
+
 					{% if ele.1 %}
 						{{ ele.0 }}
 					{% endif %}
+				
 				</td>
 			{% endfor %}
 			</tr>

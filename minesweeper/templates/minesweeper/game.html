@@ -1,6 +1,10 @@
 <script src="https://code.jquery.com/jquery-3.1.0.min.js">
 </script>
 
+<script>
+	var gameover = {{ gameOver }};
+</script>
+
 {% if curState %}
 	
 	<style>
@@ -44,19 +48,29 @@
 
 	<center>
 	<div>
-		<strong> <label id="result"> </label> </strong>
+		<strong> <label id="result">
+			{% if resultText %}
+				{{ resultText }}
+			{% endif %}
+		</label> </strong>
 	</div>
 	</center>
 
 	<a href='{% url "ms:index" %}'> New Game </a>
 
 {% endif %}
+
+
 	<script type="text/javascript">
 
 		$(document).ready(function() {
 			var gameId = $("#mine").attr("gameId");
 
 	        $("#mine td").click(function() {
+	        	if (gameover == "true") {
+					return;
+				}
+
 	            var col = parseInt($(this).index());
 	            var row = parseInt($(this).parent().index());
 

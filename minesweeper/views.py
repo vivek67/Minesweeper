@@ -53,7 +53,17 @@ def createGame(request):
 def game(request, gameId):
 	game = get_object_or_404(Game, pk=gameId)
 	curState = json.loads(game.state)
-	return render(request, "minesweeper/game.html", {'curState' : curState, 'gameId': gameId})
+
+	if game.viewedNumCount == game.numCount:	#game over already, won
+		return render(request, "minesweeper/game.html", 
+				{'curState' : curState, 'gameId': gameId, 'resultText': GAME_WON, 'gameOver':"true"})
+
+	if game.numCount == -1:		#game over, lost.
+		return render(request, "minesweeper/game.html", 
+				{'curState' : curState, 'gameId': gameId, 'resultText': BOMB_STEPPED, 'gameOver': "true"})
+
+	
+	return render(request, "minesweeper/game.html", {'curState' : curState, 'gameId': gameId, 'gameOver': "false"})
 
 def gameAction(request, gameId, row, col):
 	row = int(row)
@@ -82,6 +92,7 @@ def gameAction(request, gameId, row, col):
 				curState[row][col][1] = True
 		
 		game.state = json.dumps(curState)
+		game.numCount = -1	#to denote game over by loss.
 		game.save()
 		result = {
 			'gameOver' : True,
